@@ -36,13 +36,20 @@ func GenerateMap() {
 }
 
 func RandomFillMap() {
-	seed = (int64)(time.Now().Nanosecond() % 100)
-	rand.Seed(seed)
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			if isBoundary(x, y) {
 				level[x][y] = 1
+			} else {
+				seed = (int64)(time.Now().Nanosecond() % 100)
+				rand.Seed(seed)
+
+				if rand.Intn(100) < fillPercent {
+					level[x][y] = 1
+				} else {
+					level[x][y] = 0
+				}
 			}
 		}
 	}
