@@ -11,17 +11,17 @@ import (
 
 const (
 	// The width of the level map
-	width int = 20
+	width int = 80
 
 	// The heigh of the level map
-	height int = 20
+	height int = 60
 )
 
 //
 var level [width][height]int
 
 var seed int64
-var fillPercent = 40 //rand.Intn(100)
+var fillPercent = 48
 
 func main() {
 	GenerateMap()
@@ -31,9 +31,9 @@ func GenerateMap() {
 	RandomFillMap()
 	for i := 0; i < 5; i++ {
 		SmoothMap()
-		GenerateImage(i)
-	}
 
+	}
+	GenerateImage()
 }
 
 func RandomFillMap() {
@@ -80,12 +80,13 @@ func neighbourCount(x, y int) int {
 	var neighbours int = 0
 	for nx := (x - 1); nx <= (x + 1); nx++ {
 		for ny := (y - 1); ny <= (y + 1); ny++ {
-			if isBoundary(nx, ny) {
-				neighbours++
-			} else {
+
+			if nx >= 0 && nx < width && ny >= 0 && ny < height {
 				if nx != x || ny != y {
-					neighbours += level[x][y]
+					neighbours += level[nx][ny]
 				}
+			} else {
+				neighbours++
 			}
 
 		}
@@ -94,7 +95,7 @@ func neighbourCount(x, y int) int {
 	return neighbours
 }
 
-func GenerateImage(i int) {
+func GenerateImage() {
 	m := image.NewRGBA(image.Rect(0, 0, width, height))
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -104,8 +105,7 @@ func GenerateImage(i int) {
 		}
 	}
 
-	fileName := fmt.Sprintf("output%d.png", i)
-	out, err := os.Create(fileName)
+	out, err := os.Create("output.png")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
