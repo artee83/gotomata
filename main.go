@@ -1,17 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"image"
+	"image/png"
 	"math/rand"
+	"os"
 	"time"
 )
 
 const (
 	// The width of the level map
-	width int = 1024
+	width int = 100
 
 	// The heigh of the level map
-	height int = 1024
+	height int = 100
 )
 
 //
@@ -61,5 +64,16 @@ func GenerateImage() {
 				m.Set(x, y, image.Black)
 			}
 		}
+	}
+
+	out, err := os.Create("output.png")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	err = png.Encode(out, m)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
