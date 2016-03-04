@@ -11,39 +11,39 @@ import (
 
 const (
 	// The width of the level map
-	width int = 100
+	width int = 20
 
 	// The heigh of the level map
-	height int = 100
+	height int = 20
 )
 
 //
 var level [width][height]int
 
 var seed int64
-var fillPercent = 50 //rand.Intn(100)
+var fillPercent = 40 //rand.Intn(100)
 
 func main() {
-
 	GenerateMap()
-
 }
 
 func GenerateMap() {
 	RandomFillMap()
+	for i := 0; i < 5; i++ {
+		SmoothMap()
+		GenerateImage(i)
+	}
 
-	GenerateImage()
 }
 
 func RandomFillMap() {
-
+	seed = (int64)(time.Now().Nanosecond() % 100)
+	rand.Seed(seed)
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			if isBoundary(x, y) {
 				level[x][y] = 1
 			} else {
-				seed = (int64)(time.Now().Nanosecond() % 100)
-				rand.Seed(seed)
 
 				if rand.Intn(100) < fillPercent {
 					level[x][y] = 1
@@ -63,7 +63,38 @@ func isBoundary(x, y int) bool {
 	return false
 }
 
-func GenerateImage() {
+func SmoothMap() {
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			neighbours := neighbourCount(x, y)
+			if neighbours > 4 {
+				level[x][y] = 1
+			} else if neighbours < 4 {
+				level[x][y] = 0
+			}
+		}
+	}
+}
+
+func neighbourCount(x, y int) int {
+	var neighbours int = 0
+	for nx := (x - 1); nx <= (x + 1); nx++ {
+		for ny := (y - 1); ny <= (y + 1); ny++ {
+			if isBoundary(nx, ny) {
+				neighbours++
+			} else {
+				if nx != x || ny != y {
+					neighbours += level[x][y]
+				}
+			}
+
+		}
+	}
+
+	return neighbours
+}
+
+func GenerateImage(i int) {
 	m := image.NewRGBA(image.Rect(0, 0, width, height))
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -73,7 +104,8 @@ func GenerateImage() {
 		}
 	}
 
-	out, err := os.Create("output.png")
+	fileName := fmt.Sprintf("output%d.png", i)
+	out, err := os.Create(fileName)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
