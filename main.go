@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"image/png"
@@ -9,38 +10,57 @@ import (
 	"time"
 )
 
-const (
+var (
 	// The width of the level map
-	width int = 80
+	width int
 
-	// The heigh of the level map
-	height int = 60
+	// The height of the level map
+	height int
+
+	fillPercent int
 )
 
-//
-var level [width][height]int
+// The level map
+var level [][]int
 
 var seed int64
-var fillPercent = 48
 
 func main() {
+
+	flag.Parse()
 	GenerateMap()
 }
 
-func GenerateMap() {
-	RandomFillMap()
-	for i := 0; i < 5; i++ {
-		SmoothMap()
+func init() {
+	//Specify command line flags
+	flag.IntVar(&width, "width", 80, "width of the level map")
+	flag.IntVar(&height, "height", 60, "height of the level map")
+	flag.IntVar(&fillPercent, "fill", 48, "percent of level map to be filled")
+}
 
+func GenerateMap() {
+	//Create the 2D Array
+	level = make([][]int, width)
+	for r := range level {
+		level[r] = make([]int, height)
 	}
+
+	RandomFillMap()
+
+	for i := 0; i < 10; i++ {
+		SmoothMap()
+	}
+
 	GenerateImage()
 }
 
 func RandomFillMap() {
+	// Create a random seed
 	seed = (int64)(time.Now().Nanosecond() % 100)
 	rand.Seed(seed)
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
+
+	for x := range level {
+		for y := range level[x] {
 			if isBoundary(x, y) {
 				level[x][y] = 1
 			} else {
@@ -97,8 +117,8 @@ func neighbourCount(x, y int) int {
 
 func GenerateImage() {
 	m := image.NewRGBA(image.Rect(0, 0, width, height))
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
+	for x := range level {
+		for y := range level[x] {
 			if level[x][y] == 1 {
 				m.Set(x, y, image.Black)
 			}
